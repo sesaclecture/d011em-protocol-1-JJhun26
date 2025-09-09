@@ -17,7 +17,6 @@ import time
 from gpiozero import LED, Button
 from serial import Serial
 
-
 def blink_led() -> None:
     """
     [문제 1] 18번 핀에 연결된 LED를 1초 간격으로 ON/OFF를 10번 반복
@@ -25,8 +24,13 @@ def blink_led() -> None:
     - 종료시 LED는 OFF 상태
     """
     # TODO: blink_led 구현
+    led = LED(18)
 
-    raise NotImplementedError
+    for i in range(10):
+        led.on()
+        time.sleep(1)
+        led.off()
+        time.sleep(1)
 
 
 def check_to_input_button() -> None:
@@ -40,7 +44,22 @@ def check_to_input_button() -> None:
     """
     # TODO: check_to_input_button 구현
 
-    raise NotImplementedError
+    btn = Button(18, pull_up=True)
+    prev = btn.is_pressed
+    count = 0
+    while count<10:
+
+        cur = btn.is_pressed
+        if cur!=prev:
+            if cur:
+                print("pressed")
+                count +=1
+            else:
+                print("released")
+            prev = cur
+        
+        time.sleep(0.1)
+        
 
 
 def blink_led_through_button() -> None:
@@ -54,9 +73,22 @@ def blink_led_through_button() -> None:
     """
     # TODO: blink_led_through_button 구현
     led = LED(12)
-    led.on()
+    btn = Button(13, pull_up=True)
+    prev = False
+    count = 0
+    while count<10:
 
-    raise NotImplementedError
+        
+        if btn.is_pressed:    
+            led.on()
+            time.sleep(0.5)
+            led.off()
+            time.sleep(0.5)
+            count+=1
+
+        time.sleep(0.1)
+
+
 
 
 def transmit_msg() -> None:
@@ -65,9 +97,12 @@ def transmit_msg() -> None:
     - 총 10번 전송 후 종료
     - 개행을 붙여 전송 (수신/테스트 편의)
     """
-    # TODO: blink_led_through_button 구현
+    ser = Serial("/dev/ttyAMA3", baudrate=115200, timeout=1.0)
 
-    raise NotImplementedError
+    for i in range(10):
+        msg = f"Hello World! {i}\n"
+        ser.write(msg.encode())
+    
 
 
 def receive_msg() -> None:
@@ -75,11 +110,24 @@ def receive_msg() -> None:
     [문제 2] UART3에서 줄 단위로 읽어 화면에 출력.
     - 'exit' (대소문자 무시) 라인을 수신하면 함수 종료
     """
-    # TODO: blink_led_through_button 구현
+    ser = Serial("/dev/ttyAMA3", baudrate=115200, timeout=1.0)
+    buffer = ""
+    while True:
+        rd = ser.read().decode()
+        if not rd:
+            continue
+        if rd == "\n":
+            line = buffer.strip()
+            if line:
+                print(line)
+                if line.lower() == "exit":
+                    break
+            buffer = ""
 
-    raise NotImplementedError
+        else:
+            buffer += rd
 
-
+                
 if __name__ == "__main__":
     blink_led()
     check_to_input_button()
